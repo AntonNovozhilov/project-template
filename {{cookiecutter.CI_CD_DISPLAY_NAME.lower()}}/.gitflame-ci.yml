@@ -1,0 +1,9 @@
+variables:
+  CI_CD_DISPLAY_NAME: "{{ cookiecutter.CI_CD_DISPLAY_NAME }}"
+  CI_CD_AUTHOR: "{{ cookiecutter.CI_CD_AUTHOR }}"
+  CI_CD_DEPARTMENTS: '__CI_CD_DEPARTMENTS_JSON__'
+  CI_CD_DESCRIPTION: "{{ cookiecutter.CI_CD_DESCRIPTION }}"
+include:
+  - project: 'scriptplatform-scripts-test/repo-build'
+    ref: 'master'
+    file: '/.gitflame-ci.yml'

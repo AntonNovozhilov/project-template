@@ -1,0 +1,7 @@
+{
+  "CI_CD_DISPLAY_NAME": "ACDUU-490",
+  "project_name": "Название автоматизации",
+  "CI_CD_AUTHOR": "user@example.com",
+  "CI_CD_DEPARTMENTS": "",
+  "CI_CD_DESCRIPTION": "Краткое описание автоматизации"
+}
