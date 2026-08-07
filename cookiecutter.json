@@ -1,4 +1,11 @@
 {
+  "__prompts__": {
+    "CI_CD_DISPLAY_NAME": "Введите номер заявки, например ACDUU-490",
+    "project_name": "Введите понятное название автоматизации",
+    "CI_CD_AUTHOR": "Введите e-mail автора",
+    "CI_CD_DEPARTMENTS": "Введите отделы через запятую или оставьте пустым",
+    "CI_CD_DESCRIPTION": "Введите краткое описание автоматизации"
+  },
   "CI_CD_DISPLAY_NAME": "ACDUU-490",
   "project_name": "Название автоматизации",
   "CI_CD_AUTHOR": "user@example.com",

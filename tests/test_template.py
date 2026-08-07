@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import json
 import subprocess
 from pathlib import Path
 
@@ -206,3 +207,24 @@ def test_root_readme_contains_required_guidance() -> None:
         "GitHub URL или путь",
     ]:
         assert required_text in readme
+
+
+def test_cookiecutter_uses_human_readable_prompts() -> None:
+    """Проверить, что интерактивные вопросы не показывают технические имена."""
+    # preparation
+    cookiecutter_config_path = TEMPLATE_ROOT / "cookiecutter.json"
+
+    # action
+    cookiecutter_config = json.loads(
+        cookiecutter_config_path.read_text(encoding="utf-8")
+    )
+    prompts = cookiecutter_config["__prompts__"]
+
+    # assertion
+    assert prompts == {
+        "CI_CD_DISPLAY_NAME": "Введите номер заявки, например ACDUU-490",
+        "project_name": "Введите понятное название автоматизации",
+        "CI_CD_AUTHOR": "Введите e-mail автора",
+        "CI_CD_DEPARTMENTS": "Введите отделы через запятую или оставьте пустым",
+        "CI_CD_DESCRIPTION": "Введите краткое описание автоматизации",
+    }
