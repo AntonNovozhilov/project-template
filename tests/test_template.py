@@ -15,6 +15,7 @@ COOKIECUTTER_PYTHON = os.environ.get("COOKIECUTTER_PYTHON", "python3")
 BASE_CONTEXT = {
     "CI_CD_DISPLAY_NAME": "ACDUU-490",
     "project_name": "Тестовая автоматизация",
+    "version": "2.3.4",
     "CI_CD_AUTHOR": "ivan.ivanov@example.com",
     "CI_CD_DEPARTMENTS": "Отдел 1, Группа 2",
     "CI_CD_DESCRIPTION": "Описание тестовой автоматизации",
@@ -27,8 +28,13 @@ REQUIRED_FILES = {
     "pyproject.toml",
     "uv.lock",
     "modules/__init__.py",
+    "modules/assets/.gitkeep",
+    "modules/domain/exceptions.py",
     "modules/main.py",
+    "modules/settings/logging_setup.py",
+    "modules/settings/paths.py",
     "tests/test_main.py",
+    "ACDUU-490.spec",
 }
 
 
@@ -107,11 +113,26 @@ def test_template_generates_expected_project(tmp_path: Path) -> None:
 
     pyproject = (project_dir / "pyproject.toml").read_text(encoding="utf-8")
     assert 'name = "acduu-490"' in pyproject
+    assert 'version = "2.3.4"' in pyproject
     assert 'description = "Описание тестовой автоматизации"' in pyproject
     assert 'requires-python = ">=3.13,<3.14"' in pyproject
     assert 'dependencies = []' in pyproject
     assert '"pytest>=8.0.0"' in pyproject
     assert 'pythonpath = ["."]' in pyproject
+    uv_lock = (project_dir / "uv.lock").read_text(encoding="utf-8")
+    assert 'version = "2.3.4"' in uv_lock
+    spec_file = (project_dir / "ACDUU-490.spec").read_text(encoding="utf-8")
+    assert '["modules/main.py"]' in spec_file
+    assert '("modules/assets", "modules/assets")' in spec_file
+    readme = (project_dir / "README.md").read_text(encoding="utf-8")
+    for required_section in [
+        "## Входные данные",
+        "## Результат",
+        "## Основные бизнес-правила",
+        "## Ограничения",
+        "~/.rpa/assets",
+    ]:
+        assert required_section in readme
 
 
 def test_template_generates_empty_departments(tmp_path: Path) -> None:
@@ -183,6 +204,17 @@ def test_template_rejects_invalid_email(tmp_path: Path) -> None:
     assert "CI_CD_AUTHOR" in result.stderr
 
 
+def test_template_rejects_invalid_version(tmp_path: Path) -> None:
+    """Проверить отказ при версии, не соответствующей формату SemVer."""
+    output_dir = tmp_path / "generated"
+    context = {**BASE_CONTEXT, "version": "1.0"}
+
+    result = run_cookiecutter(output_dir, context)
+
+    assert result.returncode != 0
+    assert "version" in result.stderr
+
+
 def test_root_readme_contains_required_guidance() -> None:
     """Проверить, что README шаблона содержит обязательные инструкции."""
     # preparation
@@ -224,6 +256,7 @@ def test_cookiecutter_uses_human_readable_prompts() -> None:
     assert prompts == {
         "CI_CD_DISPLAY_NAME": "Введите номер заявки, например ACDUU-490",
         "project_name": "Введите понятное название автоматизации",
+        "version": "Введите версию проекта в формате SemVer, например 1.0.0",
         "CI_CD_AUTHOR": "Введите e-mail автора",
         "CI_CD_DEPARTMENTS": "Введите отделы через запятую или оставьте пустым",
         "CI_CD_DESCRIPTION": "Введите краткое описание автоматизации",
