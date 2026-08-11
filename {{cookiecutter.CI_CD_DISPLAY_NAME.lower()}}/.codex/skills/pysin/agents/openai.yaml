@@ -1,0 +1,4 @@
+interface:
+  display_name: "PySin"
+  short_description: "Python and Linux system design workflow"
+  default_prompt: "Use $pysin for this Python or Linux task with a short plan, Russian docstrings, and explicit tradeoffs."

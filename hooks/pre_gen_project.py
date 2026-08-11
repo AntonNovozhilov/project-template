@@ -14,6 +14,11 @@ MAX_TEXT_LENGTH = 255
 DISPLAY_NAME_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
 REPEATED_SEPARATOR_PATTERN = re.compile(r"[-_]{2,}")
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+SEMVER_PATTERN = re.compile(
+    r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
+    r"(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
+    r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
+)
 
 
 class CookiecutterValidationError(ValueError):
@@ -79,10 +84,24 @@ def validate_email(value: str) -> None:
         )
 
 
+def validate_version(value: str) -> None:
+    """Проверить версию проекта в формате SemVer.
+
+    Аргументы:
+        value: Версия проекта, например `1.0.0` или `1.0.0-rc.1`.
+    """
+    validate_limited_text(value, "version")
+    if not SEMVER_PATTERN.fullmatch(value):
+        raise CookiecutterValidationError(
+            "version: укажите SemVer-версию в формате 1.0.0 или 1.0.0-rc.1."
+        )
+
+
 def validate_cookiecutter_context() -> None:
     """Проверить все значения, которые вводит пользователь."""
     validate_display_name("{{ cookiecutter.CI_CD_DISPLAY_NAME }}")
     validate_limited_text("{{ cookiecutter.project_name }}", "project_name")
+    validate_version("{{ cookiecutter.version }}")
     validate_email("{{ cookiecutter.CI_CD_AUTHOR }}")
     validate_limited_text("{{ cookiecutter.CI_CD_DESCRIPTION }}", "CI_CD_DESCRIPTION")
 
