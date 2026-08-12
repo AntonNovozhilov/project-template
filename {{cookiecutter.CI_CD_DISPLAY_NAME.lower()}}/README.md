@@ -17,7 +17,7 @@ README должен позволить человеку, незнакомому 
 <!--
 Если в проекте необходимо использовать какие то шаблоны или переиспользуемые
 файлы, то их необходимо сохранить в папке `./modules/assets`.
-После инициализации проекта они будут скопированы в папку `/home/.rpa/`
+После инициализации проекта они будут скопированы в папку `~/.rpa/assets/`.
 
 Опишите входные данные приложения:
 - типы и форматы файлов;
@@ -88,13 +88,37 @@ README должен позволить человеку, незнакомому 
 ### Установка зависимостей
 
 ```bash
-uv sync
+make
 ```
+
+Команда `make` задаёт `UV_DEFAULT_INDEX` на Феникс, выполняет `uv lock`, затем
+запускает `uv sync --locked`.
+
+Если Makefile использовать нельзя, выполните команды вручную:
+
+```bash
+export UV_DEFAULT_INDEX="https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed"
+uv lock
+uv sync --locked
+```
+
+Если проект был создан старой версией шаблона и `uv lock` сообщает об ошибке
+разбора `uv.lock`, сохраните старый файл и пересоберите его:
+
+```bash
+mv uv.lock uv.lock.broken
+export UV_DEFAULT_INDEX="https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed"
+uv lock
+uv sync --locked
+```
+
+Для локальной разработки вне корпоративного контура используйте обычные команды
+`uv lock` и `uv sync`: они обращаются к публичному PyPI.
 
 ## Запуск
 
 ```bash
-uv run python -m {{cookiecutter.project_slug.lower()}} [опции]
+uv run python -m modules.main [опции]
 ```
 
 ### Возможные опции
@@ -161,8 +185,8 @@ uv run python -m {{cookiecutter.project_slug.lower()}} [опции]
 
 Основные компоненты:
 
-- `{{cookiecutter.project_slug.lower()}}/` — код приложения;
-- `{{cookiecutter.project_slug.lower()}}/__main__.py` — точка входа;
+- `modules/` — код приложения;
+- `modules/main.py` — точка входа;
 - `tests/` — автоматические тесты.
 
 ## Тестирование
@@ -184,5 +208,5 @@ uv run black --check .
 Статический анализ:
 
 ```bash
-uv run pylint {{cookiecutter.project_slug.lower()}}
+uv run pylint modules
 ```

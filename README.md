@@ -20,6 +20,7 @@
 README.md
 pyproject.toml
 uv.lock
+Makefile
 modules/__init__.py
 modules/main.py
 tests/test_main.py
@@ -160,11 +161,44 @@ uv run python -m modules.main
 uv run pytest
 ```
 
+## Установка через Phoenix
+
+В сгенерированном проекте Makefile настроен на корпоративный индекс Феникс.
+Из каталога проекта выполните:
+
+```bash
+make
+```
+
+Команда задаёт `UV_DEFAULT_INDEX`, пересобирает `uv.lock` через Феникс и
+выполняет `uv sync --locked`.
+
+Если Makefile использовать нельзя, выполните те же действия вручную:
+
+```bash
+export UV_DEFAULT_INDEX="https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed"
+uv lock
+uv sync --locked
+```
+
+Если проект был создан старой версией шаблона и `uv lock` сообщает об ошибке
+разбора `uv.lock`, сохраните старый файл и пересоберите его:
+
+```bash
+mv uv.lock uv.lock.broken
+export UV_DEFAULT_INDEX="https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed"
+uv lock
+uv sync --locked
+```
+
+В локальной разработке без Makefile команды `uv lock` и `uv sync` используют
+публичный PyPI.
+
 ## Про Феникс
 
-Вне корпоративного контура используется обычный публичный PyPI. Шаблон не
-переключает индекс пакетов на Феникс. В корпоративном контуре установка
-библиотек через Феникс должна обеспечиваться средой.
+Вне корпоративного контура используется обычный публичный PyPI. В корпоративном
+контуре используйте `make` или ручную настройку `UV_DEFAULT_INDEX`, приведённую
+выше. Логин и пароль не записывайте в Makefile, `pyproject.toml` или `uv.lock`.
 
 ## Проверка результата
 
