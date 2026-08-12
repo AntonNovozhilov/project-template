@@ -18,6 +18,7 @@ RAW_DEPARTMENTS = r"""{{ cookiecutter.CI_CD_DEPARTMENTS }}"""
 README_REPLACEMENTS = {
     COOKIECUTTER_PREFIX + "project_name }}": {{ cookiecutter.project_name | tojson }},
     COOKIECUTTER_PREFIX + "CI_CD_DISPLAY_NAME }}": {{ cookiecutter.CI_CD_DISPLAY_NAME | tojson }},
+    COOKIECUTTER_PREFIX + "CI_CD_DISPLAY_NAME.lower() }}": {{ cookiecutter.CI_CD_DISPLAY_NAME.lower() | tojson }},
     COOKIECUTTER_PREFIX + "CI_CD_DESCRIPTION }}": {{ cookiecutter.CI_CD_DESCRIPTION | tojson }},
     COOKIECUTTER_PREFIX + "CI_CD_AUTHOR }}": {{ cookiecutter.CI_CD_AUTHOR | tojson }},
 }

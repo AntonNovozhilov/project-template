@@ -139,7 +139,7 @@ def test_template_generates_expected_project(tmp_path: Path) -> None:
         "## Результат",
         "## Основные бизнес-правила",
         "## Ограничения",
-        "~/.rpa/assets",
+        "~/.rpa/rpa-490/assets",
     ]:
         assert required_section in readme
 
