@@ -51,12 +51,35 @@ def test_runtime_directories_and_assets_are_prepared(tmp_path: Path) -> None:
     result = main(paths)
 
     assert result == 0
+    assert paths.project_root == tmp_path / ".rpa" / "rpa-490"
+    assert paths.project_root.is_dir()
     assert paths.config_dir.is_dir()
     assert paths.share_dir.is_dir()
     assert paths.state_dir.is_dir()
     assert paths.assets_dir.is_dir()
     assert (paths.assets_dir / ".gitkeep").is_file()
     assert list((paths.state_dir / "logs").glob("*.log"))
+
+
+def test_existing_asset_is_not_overwritten(tmp_path: Path) -> None:
+    """Проверить сохранение локально изменённого файла ресурса.
+
+    Временный mapping-файл имитирует пользовательскую настройку, которую нельзя
+    перезаписывать при повторном запуске приложения.
+    """
+    source_file = paths_module.get_packaged_assets_directory() / "mapping-test.json"
+    source_file.write_text('{"source": true}', encoding="utf-8")
+    try:
+        paths = AppPaths(root=tmp_path / ".rpa")
+        paths.ensure_directories()
+        destination_file = paths.assets_dir / source_file.name
+        destination_file.write_text('{"local": true}', encoding="utf-8")
+
+        paths.copy_packaged_assets()
+
+        assert destination_file.read_text(encoding="utf-8") == '{"local": true}'
+    finally:
+        source_file.unlink(missing_ok=True)
 
 
 def test_input_data_error_is_application_error() -> None:

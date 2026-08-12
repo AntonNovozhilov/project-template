@@ -19,6 +19,7 @@ from modules.domain.exceptions import (
 
 
 RPA_DIRECTORY_NAME = ".rpa"
+PROJECT_DIRECTORY_NAME = "{{ cookiecutter.CI_CD_DISPLAY_NAME.lower() }}"
 ASSETS_DIRECTORY_NAME = "assets"
 
 
@@ -27,11 +28,12 @@ class AppPaths:
     """Хранит пути к runtime-каталогам приложения в домашнем каталоге.
 
     Аргументы:
-        root: Корневой каталог runtime-данных. По умолчанию `~/.rpa`.
+        root: Общий корневой каталог runtime-данных. По умолчанию `~/.rpa`.
     """
 
     root: Path = field(default_factory=lambda: Path.home() / RPA_DIRECTORY_NAME)
 
+    project_root: Path = field(init=False)
     config_dir: Path = field(init=False)
     share_dir: Path = field(init=False)
     state_dir: Path = field(init=False)
@@ -39,10 +41,12 @@ class AppPaths:
 
     def __post_init__(self) -> None:
         """Вычислить дочерние runtime-каталоги."""
-        object.__setattr__(self, "config_dir", self.root / "config")
-        object.__setattr__(self, "share_dir", self.root / "share")
-        object.__setattr__(self, "state_dir", self.root / "state")
-        object.__setattr__(self, "assets_dir", self.root / ASSETS_DIRECTORY_NAME)
+        project_root = self.root / PROJECT_DIRECTORY_NAME
+        object.__setattr__(self, "project_root", project_root)
+        object.__setattr__(self, "config_dir", project_root / "config")
+        object.__setattr__(self, "share_dir", project_root / "share")
+        object.__setattr__(self, "state_dir", project_root / "state")
+        object.__setattr__(self, "assets_dir", project_root / ASSETS_DIRECTORY_NAME)
 
     def ensure_directories(self) -> AppPaths:
         """Создать все runtime-каталоги, если они ещё отсутствуют."""
@@ -56,18 +60,35 @@ class AppPaths:
         return self
 
     def copy_packaged_assets(self) -> None:
-        """Рекурсивно скопировать поставляемые ресурсы в runtime-каталог."""
+        """Добавить поставляемые ресурсы без перезаписи локальных изменений."""
         source_dir = get_packaged_assets_directory()
         validate_assets_source(source_dir)
         validate_assets_destination(self.assets_dir)
         try:
-            shutil.copytree(source_dir, self.assets_dir, dirs_exist_ok=True)
+            shutil.copytree(
+                source_dir,
+                self.assets_dir,
+                dirs_exist_ok=True,
+                copy_function=copy_file_if_absent,
+            )
         except OSError as error:
             raise build_assets_synchronization_error(source_dir, self.assets_dir, error) from error
         except shutil.Error as error:
             raise AssetsSynchronizationError(
                 f"Не удалось скопировать ресурсы из {source_dir} в {self.assets_dir}: {error}."
             ) from error
+
+
+def copy_file_if_absent(source: str, destination: str) -> str:
+    """Скопировать файл только при отсутствии файла назначения.
+
+    Аргументы:
+        source: Путь к поставляемому файлу.
+        destination: Путь к runtime-файлу.
+    """
+    if os.path.exists(destination):
+        return destination
+    return shutil.copy2(source, destination)
 
 
 def get_packaged_assets_directory() -> Path:
@@ -97,7 +118,7 @@ def validate_assets_destination(destination_dir: Path) -> None:
     """Проверить права записи в runtime-каталог ресурсов.
 
     Аргументы:
-        destination_dir: Каталог `~/.rpa/assets`, куда копируются ресурсы.
+        destination_dir: Каталог `~/.rpa/<project-name>/assets`, куда копируются ресурсы.
     """
     existing_directory = get_existing_parent_directory(destination_dir)
     if not os.access(existing_directory, os.W_OK | os.X_OK):
