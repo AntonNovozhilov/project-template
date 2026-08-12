@@ -80,26 +80,31 @@ README должен позволить человеку, незнакомому 
 
 ## Требования
 
-- Python 3.9
+- Python 3.13
 - `uv`
 
-Зависимости проекта описаны в `pyproject.toml` и зафиксированы в `uv.lock`.
+Зависимости проекта описаны в `pyproject.toml`. Файл `uv.lock` создаётся
+командой `make` через Phoenix в целевом контуре.
 
 ### Установка зависимостей
 
 ```bash
+python3.13 -m pip install --upgrade \
+    --index-url "https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed" \
+    uv
 make
 ```
 
-Команда `make` задаёт `UV_DEFAULT_INDEX` на Феникс, выполняет `uv lock`, затем
-запускает `uv sync --locked`.
+Команда `make` задаёт `UV_DEFAULT_INDEX` на Феникс, выбирает Python 3.13,
+выполняет `uv lock`, затем запускает `uv sync --locked`.
 
 Если Makefile использовать нельзя, выполните команды вручную:
 
 ```bash
 export UV_DEFAULT_INDEX="https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed"
-uv lock
-uv sync --locked
+export UV_PYTHON="3.13"
+uv lock --python 3.13
+uv sync --locked --python 3.13
 ```
 
 Если проект был создан старой версией шаблона и `uv lock` сообщает об ошибке
@@ -108,8 +113,9 @@ uv sync --locked
 ```bash
 mv uv.lock uv.lock.broken
 export UV_DEFAULT_INDEX="https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed"
-uv lock
-uv sync --locked
+export UV_PYTHON="3.13"
+uv lock --python 3.13
+uv sync --locked --python 3.13
 ```
 
 Для локальной разработки вне корпоративного контура используйте обычные команды

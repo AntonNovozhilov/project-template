@@ -19,7 +19,6 @@
 .python-version
 README.md
 pyproject.toml
-uv.lock
 Makefile
 modules/__init__.py
 modules/main.py
@@ -146,10 +145,11 @@ Cookiecutter создаёт проект в текущем каталоге за
 
 ## Работа с uv
 
-`uv sync` создаёт окружение и ставит зависимости из `pyproject.toml` и `uv.lock`.
+`uv sync` создаёт окружение и ставит зависимости из `pyproject.toml` и созданного
+в контуре `uv.lock`.
 `uv add` добавляет runtime-зависимость.
 `uv remove` удаляет зависимость.
-`uv lock` пересобирает файл блокировки.
+`uv lock` создаёт или пересобирает файл блокировки.
 `uv run` запускает команду внутри окружения.
 
 ```bash
@@ -167,18 +167,22 @@ uv run pytest
 Из каталога проекта выполните:
 
 ```bash
+python3.13 -m pip install --upgrade \
+    --index-url "https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed" \
+    uv
 make
 ```
 
-Команда задаёт `UV_DEFAULT_INDEX`, пересобирает `uv.lock` через Феникс и
-выполняет `uv sync --locked`.
+Команда задаёт `UV_DEFAULT_INDEX`, выбирает Python 3.13, пересобирает `uv.lock`
+через Феникс и выполняет `uv sync --locked`.
 
 Если Makefile использовать нельзя, выполните те же действия вручную:
 
 ```bash
 export UV_DEFAULT_INDEX="https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed"
-uv lock
-uv sync --locked
+export UV_PYTHON="3.13"
+uv lock --python 3.13
+uv sync --locked --python 3.13
 ```
 
 Если проект был создан старой версией шаблона и `uv lock` сообщает об ошибке
@@ -187,8 +191,9 @@ uv sync --locked
 ```bash
 mv uv.lock uv.lock.broken
 export UV_DEFAULT_INDEX="https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed"
-uv lock
-uv sync --locked
+export UV_PYTHON="3.13"
+uv lock --python 3.13
+uv sync --locked --python 3.13
 ```
 
 В локальной разработке без Makefile команды `uv lock` и `uv sync` используют
