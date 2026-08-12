@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -24,6 +25,7 @@ REQUIRED_FILES = {
     ".gitflame-ci.yml",
     ".gitignore",
     ".python-version",
+    "Makefile",
     "README.md",
     "pyproject.toml",
     "uv.lock",
@@ -116,15 +118,30 @@ def test_template_generates_expected_project(tmp_path: Path) -> None:
     assert 'version = "2.3.4"' in pyproject
     assert 'description = "Описание тестовой автоматизации"' in pyproject
     assert 'requires-python = ">=3.13,<3.14"' in pyproject
-    assert 'dependencies = []' in pyproject
-    assert '"pytest>=8.0.0"' in pyproject
-    assert 'pythonpath = ["."]' in pyproject
+    assert '"pyinstaller>=6.21.0"' in pyproject
+    assert '"pytest>=8.4.2"' in pyproject
     uv_lock = (project_dir / "uv.lock").read_text(encoding="utf-8")
     assert 'version = "2.3.4"' in uv_lock
+    assert re.search(
+        r'\[\[package\]\]\nname = "pyinstaller"\nversion = "[^\"]+"\n'
+        r'source = \{ registry = "https://pypi.org/simple" \}',
+        uv_lock,
+    )
+    assert uv_lock.count('\nname = "pyinstaller"\n') == 1
     spec_file = (project_dir / "RPA-490.spec").read_text(encoding="utf-8")
     assert '["modules/main.py"]' in spec_file
     assert '("modules/assets", "modules/assets")' in spec_file
     readme = (project_dir / "README.md").read_text(encoding="utf-8")
+    assert "# Тестовая автоматизация" in readme
+    assert "Номер заявки: `RPA-490`" in readme
+    assert "Описание: Описание тестовой автоматизации" in readme
+    assert "Автор: `ivan.ivanov@rt.ru`" in readme
+    assert "https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed" in readme
+    assert "{{ cookiecutter." not in readme
+    makefile = (project_dir / "Makefile").read_text(encoding="utf-8")
+    assert "UV_DEFAULT_INDEX" in makefile
+    assert "uv lock" in makefile
+    assert "uv sync --locked" in makefile
     for required_section in [
         "## Входные данные",
         "## Результат",
@@ -239,7 +256,7 @@ def test_root_readme_contains_required_guidance() -> None:
     line_count = len(readme.splitlines())
 
     # assertion
-    assert 120 <= line_count <= 180
+    assert 120 <= line_count <= 220
     for required_text in [
         "python -m pip --version",
         "python -m ensurepip --upgrade",
@@ -248,8 +265,13 @@ def test_root_readme_contains_required_guidance() -> None:
         "uv add",
         "uv remove",
         "uv lock",
+        "uv sync --locked",
+        "uv.lock.broken",
         "uv run pytest",
         "Феникс",
+        "make",
+        "UV_DEFAULT_INDEX",
+        "https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed",
         "GitHub URL или путь",
     ]:
         assert required_text in readme
