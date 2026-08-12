@@ -14,6 +14,7 @@ MAX_TEXT_LENGTH = 255
 DISPLAY_NAME_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
 REPEATED_SEPARATOR_PATTERN = re.compile(r"[-_]{2,}")
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+EMAIL_DOMAIN = "rt.ru"
 SEMVER_PATTERN = re.compile(
     r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
     r"(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
@@ -54,7 +55,7 @@ def validate_display_name(value: str) -> None:
     """Проверить номер заявки для технического имени проекта.
 
     Аргументы:
-        value: Номер заявки, например ACDUU-490.
+        value: Номер заявки, например RPA-490.
     """
     validate_limited_text(value, "CI_CD_DISPLAY_NAME")
     if not DISPLAY_NAME_PATTERN.fullmatch(value):
@@ -72,7 +73,7 @@ def validate_display_name(value: str) -> None:
 
 
 def validate_email(value: str) -> None:
-    """Проверить общий формат e-mail.
+    """Проверить формат e-mail и корпоративный домен автора.
 
     Аргументы:
         value: E-mail автора проекта.
@@ -81,6 +82,10 @@ def validate_email(value: str) -> None:
     if not EMAIL_PATTERN.fullmatch(value):
         raise CookiecutterValidationError(
             "CI_CD_AUTHOR: укажите e-mail в формате name@example.com."
+        )
+    if value.rsplit("@", maxsplit=1)[1].lower() != EMAIL_DOMAIN:
+        raise CookiecutterValidationError(
+            f"CI_CD_AUTHOR: e-mail должен быть в доменной зоне {EMAIL_DOMAIN}."
         )
 
 
