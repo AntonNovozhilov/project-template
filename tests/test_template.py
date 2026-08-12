@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import os
 import json
-import re
 import subprocess
 from pathlib import Path
 
@@ -28,7 +27,6 @@ REQUIRED_FILES = {
     "Makefile",
     "README.md",
     "pyproject.toml",
-    "uv.lock",
     "modules/__init__.py",
     "modules/assets/.gitkeep",
     "modules/domain/exceptions.py",
@@ -120,14 +118,6 @@ def test_template_generates_expected_project(tmp_path: Path) -> None:
     assert 'requires-python = ">=3.13,<3.14"' in pyproject
     assert '"pyinstaller>=6.21.0"' in pyproject
     assert '"pytest>=8.4.2"' in pyproject
-    uv_lock = (project_dir / "uv.lock").read_text(encoding="utf-8")
-    assert 'version = "2.3.4"' in uv_lock
-    assert re.search(
-        r'\[\[package\]\]\nname = "pyinstaller"\nversion = "[^\"]+"\n'
-        r'source = \{ registry = "https://pypi.org/simple" \}',
-        uv_lock,
-    )
-    assert uv_lock.count('\nname = "pyinstaller"\n') == 1
     spec_file = (project_dir / "RPA-490.spec").read_text(encoding="utf-8")
     assert '["modules/main.py"]' in spec_file
     assert '("modules/assets", "modules/assets")' in spec_file
@@ -140,8 +130,10 @@ def test_template_generates_expected_project(tmp_path: Path) -> None:
     assert "{{ cookiecutter." not in readme
     makefile = (project_dir / "Makefile").read_text(encoding="utf-8")
     assert "UV_DEFAULT_INDEX" in makefile
-    assert "uv lock" in makefile
-    assert "uv sync --locked" in makefile
+    assert "PYTHON_VERSION ?= 3.13" in makefile
+    assert "UV_PYTHON" in makefile
+    assert "uv lock --python $(PYTHON_VERSION)" in makefile
+    assert "uv sync --locked --python $(PYTHON_VERSION)" in makefile
     for required_section in [
         "## Входные данные",
         "## Результат",
@@ -270,6 +262,7 @@ def test_root_readme_contains_required_guidance() -> None:
         "uv run pytest",
         "Феникс",
         "make",
+        "python3.13 -m pip install --upgrade",
         "UV_DEFAULT_INDEX",
         "https://repository.rt.ru/repository/pypi-pypi.org/simple-allowed",
         "GitHub URL или путь",
