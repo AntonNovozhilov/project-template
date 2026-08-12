@@ -1,16 +1,16 @@
 {
   "__prompts__": {
-    "CI_CD_DISPLAY_NAME": "Введите номер заявки, например ACDUU-490",
+    "CI_CD_DISPLAY_NAME": "Введите номер заявки, например RPA-490",
     "project_name": "Введите понятное название автоматизации",
     "version": "Введите версию проекта в формате SemVer, например 1.0.0",
-    "CI_CD_AUTHOR": "Введите e-mail автора",
+    "CI_CD_AUTHOR": "Введите e-mail автора в доменной зоне rt.ru",
     "CI_CD_DEPARTMENTS": "Введите отделы через запятую или оставьте пустым",
     "CI_CD_DESCRIPTION": "Введите краткое описание автоматизации"
   },
-  "CI_CD_DISPLAY_NAME": "ACDUU-490",
+  "CI_CD_DISPLAY_NAME": "RPA-490",
   "project_name": "Название автоматизации",
   "version": "0.1.0",
-  "CI_CD_AUTHOR": "user@example.com",
+  "CI_CD_AUTHOR": "author@rt.ru",
   "CI_CD_DEPARTMENTS": "",
   "CI_CD_DESCRIPTION": "Краткое описание автоматизации"
 }

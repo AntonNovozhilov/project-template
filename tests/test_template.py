@@ -13,10 +13,10 @@ import pytest
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
 COOKIECUTTER_PYTHON = os.environ.get("COOKIECUTTER_PYTHON", "python3")
 BASE_CONTEXT = {
-    "CI_CD_DISPLAY_NAME": "ACDUU-490",
+    "CI_CD_DISPLAY_NAME": "RPA-490",
     "project_name": "Тестовая автоматизация",
     "version": "2.3.4",
-    "CI_CD_AUTHOR": "ivan.ivanov@example.com",
+    "CI_CD_AUTHOR": "ivan.ivanov@rt.ru",
     "CI_CD_DEPARTMENTS": "Отдел 1, Группа 2",
     "CI_CD_DESCRIPTION": "Описание тестовой автоматизации",
 }
@@ -34,7 +34,7 @@ REQUIRED_FILES = {
     "modules/settings/logging_setup.py",
     "modules/settings/paths.py",
     "tests/test_main.py",
-    "ACDUU-490.spec",
+    "RPA-490.spec",
 }
 
 
@@ -89,7 +89,7 @@ def assert_valid_generation(project_dir: Path) -> None:
     ]
     assert missing_files == []
     assert not (project_dir / ".git").exists()
-    assert (project_dir / ".python-version").read_text(encoding="utf-8") == "3.13.3\n"
+    assert (project_dir / ".python-version").read_text(encoding="utf-8") == "3.13\n"
 
 
 def test_template_generates_expected_project(tmp_path: Path) -> None:
@@ -102,17 +102,17 @@ def test_template_generates_expected_project(tmp_path: Path) -> None:
 
     # assertion
     assert result.returncode == 0, result.stderr
-    project_dir = output_dir / "acduu-490"
+    project_dir = output_dir / "rpa-490"
     assert_valid_generation(project_dir)
     gitflame_ci = (project_dir / ".gitflame-ci.yml").read_text(encoding="utf-8")
-    assert 'CI_CD_DISPLAY_NAME: "ACDUU-490"' in gitflame_ci
-    assert 'CI_CD_AUTHOR: "ivan.ivanov@example.com"' in gitflame_ci
+    assert 'CI_CD_DISPLAY_NAME: "RPA-490"' in gitflame_ci
+    assert 'CI_CD_AUTHOR: "ivan.ivanov@rt.ru"' in gitflame_ci
     assert "CI_CD_DEPARTMENTS: '[\"Отдел 1\", \"Группа 2\"]'" in gitflame_ci
     assert 'CI_CD_DESCRIPTION: "Описание тестовой автоматизации"' in gitflame_ci
     assert "scriptplatform-scripts-test/repo-build" in gitflame_ci
 
     pyproject = (project_dir / "pyproject.toml").read_text(encoding="utf-8")
-    assert 'name = "acduu-490"' in pyproject
+    assert 'name = "rpa-490"' in pyproject
     assert 'version = "2.3.4"' in pyproject
     assert 'description = "Описание тестовой автоматизации"' in pyproject
     assert 'requires-python = ">=3.13,<3.14"' in pyproject
@@ -121,7 +121,7 @@ def test_template_generates_expected_project(tmp_path: Path) -> None:
     assert 'pythonpath = ["."]' in pyproject
     uv_lock = (project_dir / "uv.lock").read_text(encoding="utf-8")
     assert 'version = "2.3.4"' in uv_lock
-    spec_file = (project_dir / "ACDUU-490.spec").read_text(encoding="utf-8")
+    spec_file = (project_dir / "RPA-490.spec").read_text(encoding="utf-8")
     assert '["modules/main.py"]' in spec_file
     assert '("modules/assets", "modules/assets")' in spec_file
     readme = (project_dir / "README.md").read_text(encoding="utf-8")
@@ -146,7 +146,7 @@ def test_template_generates_empty_departments(tmp_path: Path) -> None:
 
     # assertion
     assert result.returncode == 0, result.stderr
-    gitflame_ci = (output_dir / "acduu-490" / ".gitflame-ci.yml").read_text(
+    gitflame_ci = (output_dir / "rpa-490" / ".gitflame-ci.yml").read_text(
         encoding="utf-8"
     )
     assert "CI_CD_DEPARTMENTS: '[]'" in gitflame_ci
@@ -163,7 +163,7 @@ def test_template_escapes_quoted_departments(tmp_path: Path) -> None:
 
     # assertion
     assert result.returncode == 0, result.stderr
-    gitflame_ci = (output_dir / "acduu-490" / ".gitflame-ci.yml").read_text(
+    gitflame_ci = (output_dir / "rpa-490" / ".gitflame-ci.yml").read_text(
         encoding="utf-8"
     )
     assert "CI_CD_DEPARTMENTS: '[\"Отдел \\\"А\\\"\", \"Управление\"]'" in gitflame_ci
@@ -171,7 +171,7 @@ def test_template_escapes_quoted_departments(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize(
     "display_name",
-    ["ACDUU/490", "-ACDUU-490", "ACDUU-490-", "ACDUU--490", "ACDUU__490"],
+    ["RPA/490", "-RPA-490", "RPA-490-", "RPA--490"],
 )
 def test_template_rejects_invalid_display_name(
     tmp_path: Path,
@@ -202,6 +202,20 @@ def test_template_rejects_invalid_email(tmp_path: Path) -> None:
     # assertion
     assert result.returncode != 0
     assert "CI_CD_AUTHOR" in result.stderr
+
+
+def test_template_rejects_email_outside_rt_domain(tmp_path: Path) -> None:
+    """Проверить отказ для e-mail автора вне доменной зоны rt.ru."""
+    # preparation
+    output_dir = tmp_path / "generated"
+    context = {**BASE_CONTEXT, "CI_CD_AUTHOR": "ivan.ivanov@example.com"}
+
+    # action
+    result = run_cookiecutter(output_dir, context)
+
+    # assertion
+    assert result.returncode != 0
+    assert "доменной зоне rt.ru" in result.stderr
 
 
 def test_template_rejects_invalid_version(tmp_path: Path) -> None:
@@ -254,10 +268,10 @@ def test_cookiecutter_uses_human_readable_prompts() -> None:
 
     # assertion
     assert prompts == {
-        "CI_CD_DISPLAY_NAME": "Введите номер заявки, например ACDUU-490",
+        "CI_CD_DISPLAY_NAME": "Введите номер заявки, например RPA-490",
         "project_name": "Введите понятное название автоматизации",
         "version": "Введите версию проекта в формате SemVer, например 1.0.0",
-        "CI_CD_AUTHOR": "Введите e-mail автора",
+        "CI_CD_AUTHOR": "Введите e-mail автора в доменной зоне rt.ru",
         "CI_CD_DEPARTMENTS": "Введите отделы через запятую или оставьте пустым",
         "CI_CD_DESCRIPTION": "Введите краткое описание автоматизации",
     }

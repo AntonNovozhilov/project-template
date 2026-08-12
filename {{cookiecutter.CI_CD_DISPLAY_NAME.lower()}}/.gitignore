@@ -16,3 +16,5 @@ build/
 .vscode/
 .DS_Store
 handoff_steps.md
+AGENTS.md
+.codex/
